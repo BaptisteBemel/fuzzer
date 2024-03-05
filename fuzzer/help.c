@@ -67,6 +67,7 @@ int main(int argc, char* argv[])
         printf("Command not found\n");
         rv = -1;
     }
+    printf("%d\n", rv);
     return rv;
 }
 
