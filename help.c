@@ -22,6 +22,12 @@ struct tar_t
     char padding[12];             /* 500 */
 };
 
+
+int main(int argc, char* argv[])
+{
+    
+}
+
 /**
  * Launches another executable given as argument,
  * parses its output and check whether or not it matches "*** The program has crashed ***".
@@ -33,13 +39,11 @@ struct tar_t
  * BONUS (for fun, no additional marks) without modifying this code,
  * compile it and use the executable to restart our computer.
  */
-int main(int argc, char* argv[])
-{
-    if (argc < 2)
-        return -1;
+ int chaispas(char* path) {
+
     int rv = 0;
     char cmd[51];
-    strncpy(cmd, argv[1], 25);
+    strncpy(cmd, path, 25);
     cmd[26] = '\0';
     strncat(cmd, " archive.tar", 25);
     char buf[33];
@@ -69,7 +73,7 @@ int main(int argc, char* argv[])
     }
     printf("%d\n", rv);
     return rv;
-}
+ }
 
 /**
  * Computes the checksum for a tar header and encode it on the header
