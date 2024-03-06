@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+char* path ;
+
 struct tar_t
 {                              /* byte offset */
     char name[100];               /*   0 */
@@ -23,11 +25,6 @@ struct tar_t
 };
 
 
-int main(int argc, char* argv[])
-{
-    
-}
-
 /**
  * Launches another executable given as argument,
  * parses its output and check whether or not it matches "*** The program has crashed ***".
@@ -39,7 +36,7 @@ int main(int argc, char* argv[])
  * BONUS (for fun, no additional marks) without modifying this code,
  * compile it and use the executable to restart our computer.
  */
- int chaispas(char* path) {
+ int extractor() {
 
     int rv = 0;
     char cmd[51];
@@ -96,4 +93,38 @@ unsigned int calculate_checksum(struct tar_t* entry){
     entry->chksum[6] = '\0';
     entry->chksum[7] = ' ';
     return check;
+}
+
+/**
+ * Creates a new tar file
+ */
+void gen_tar() {
+
+}
+
+/**
+ * Perform fuzzing on various field
+ */
+void fuzzing() {
+
+    //gen_tar() ;
+
+    extractor() ;
+
+}
+
+
+/*
+Main Function
+*/
+int main(int argc, char* argv[])
+{
+    
+    printf("--- This is a fuzzing test ---\n") ;
+
+    path = argv[1] ;
+
+    fuzzing() ;
+
+    printf("--- End of the fuzzing test ---\n") ;
 }
