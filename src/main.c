@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#define TMAGIC "ustar"
+#define REGTYPE  '0' 
+#define TVERSION "00"
+
 char* path ;
 
 struct tar_t
@@ -24,6 +28,7 @@ struct tar_t
     char padding[12];             /* 500 */
 };
 
+static struct tar_t header;
 
 /**
  * Launches another executable given as argument,
@@ -95,11 +100,67 @@ unsigned int calculate_checksum(struct tar_t* entry){
     return check;
 }
 
+void create_header(struct tar_t* header) {
+    
+    char archive_name[100];
+    char linkname[100] = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    char full_zero[8] = "0000000";
+
+    memset(header, 0, sizeof(struct tar_t));
+
+    snprintf(header->name, sizeof(header->name), "%s", archive_name);
+    snprintf(header->mode, sizeof(header->mode), "07777"); // all perms (based on constants.h)
+    snprintf(header->uid, sizeof(header->uid),"%s", full_zero);
+    snprintf(header->gid, sizeof(header->gid),"%s", full_zero);
+    snprintf(header->size, sizeof(header->size), "%011o", 0); // size needs to be in octal
+    snprintf(header->mtime, sizeof(header->mtime), "%011lo", time(NULL)); // set modification time to current time in octal format
+    //checksum at the end (need all other fields before calculating the checksum)
+    header->typeflag = REGTYPE;
+    snprintf(header->linkname, sizeof(header->linkname), "%s", linkname);
+    snprintf(header->magic, sizeof(header->magic), TMAGIC);
+    snprintf(header->version, sizeof(header->version) + 1,  TVERSION);
+    snprintf(header->uname, sizeof(header->uname), "Z3US");
+    snprintf(header->gname, sizeof(header->gname), "Z3US");
+    snprintf(header->devmajor, sizeof(header->devmajor),"%s", full_zero);
+    snprintf(header->devminor, sizeof(header->devminor),"%s", full_zero);
+}
+
 /**
  * Creates a new tar file
  */
-void gen_tar() {
+void gen_tar(struct tar_t* header) {
+    calculate_checksum(header);
 
+    //Open the tar file 
+    FILE *fp = fopen("archive.tar", "wb");
+    if (fp == NULL) {
+        perror("Error opening file");
+    }
+
+    fwrite(header, sizeof(struct tar_t), 1, fp) ;
+
+    char* content_header = NULL ;
+    size_t content_header_size = 0 ;
+    if (content_header_size > 0 && fwrite(content_header, content_header_size, 1, fp) != 1) {
+        perror("Error writing content");
+        fclose(fp);
+        //exit(EXIT_FAILURE);
+    }
+
+    char end_data[1024];
+    memset(end_data, 0, 1024);
+
+    if (fwrite(end_data, 1024, 1, fp) != 1) {
+        perror("Error writing end bytes");
+        fclose(fp); 
+        //exit(EXIT_FAILURE);
+    }
+
+
+    //Close the tar file
+    if (fclose(fp) != 0) {
+        perror("Error closing file");
+    }
 }
 
 /**
@@ -108,6 +169,11 @@ void gen_tar() {
 void fuzzing() {
 
     //gen_tar() ;
+
+
+    create_header(&header);
+
+    gen_tar(&header);
 
     extractor() ;
 
