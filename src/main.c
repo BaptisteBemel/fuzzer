@@ -198,11 +198,38 @@ void print_header(struct tar_t* header) {
     printf("-----Header end-----\n");
 }
 
+/**
+ * Perform fuzzing on various field
+ */
+void fuzzing(char* field_to_fuze, size_t size_field_to_fuze) {
+
+    //Test 1
+    //Simple string
+    create_header(&header);
+    strncpy(field_to_fuze,"SimpleString",size_field_to_fuze);
+    gen_tar(&header);
+    extractor() ;
+
+    //Test 2
+    //Null field
+
+    //Test 3
+    //field too long
+
+    //Test 4
+    //Non ascii char
+
+    //Test 5
+    //???
+
+
+}
+
 //Fuzzing on the field name
 void name(){
     printf(" Start of Fuzzing on NAME\n");
 
-
+    fuzzing(header.name, sizeof(header.name));
 
     printf(" End of Fuzzing on MODE\n");
 }
@@ -330,22 +357,6 @@ void gname(){
 }
 
 
-/**
- * Perform fuzzing on various field
- */
-void fuzzing() {
-
-    create_header(&header);
-
-    gen_tar(&header);
-
-    print_header(&header) ;
-
-    extractor() ;
-
-}
-
-
 /*
 Main Function
 */
@@ -355,7 +366,6 @@ int main(int argc, char* argv[])
     
     printf("--- This is a fuzzing test ---\n") ;
 
-    fuzzing() ;
     name() ;
     mode() ;
     uid() ;
