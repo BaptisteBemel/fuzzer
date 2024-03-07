@@ -212,11 +212,26 @@ void fuzzing(char* field_to_fuze, size_t size_field_to_fuze) {
 
     //Test 2
     //Null field
+    create_header(&header);
+    memset(field_to_fuze,0,size_field_to_fuze);
+    gen_tar(&header);
+    extractor() ;
 
     //Test 3
-    //field too long
+    //Empty Field
+    create_header(&header);
+    strncpy(field_to_fuze,"",size_field_to_fuze);
+    gen_tar(&header);
+    extractor() ;
 
     //Test 4
+    //field too long
+    create_header(&header);
+    strncpy(field_to_fuze,"ThisIsAFieldIHopeIsReallyLongAndTooLongForTheExtractorToWorkCorrectly",size_field_to_fuze);
+    gen_tar(&header);
+    extractor() ;
+
+    //Test 5
     //Non ascii char
 
     //Test 5
@@ -366,7 +381,8 @@ int main(int argc, char* argv[])
     
     printf("--- This is a fuzzing test ---\n") ;
 
-    name() ;
+    //name() ;
+    /*
     mode() ;
     uid() ;
     gid() ;
@@ -379,6 +395,7 @@ int main(int argc, char* argv[])
     version();
     uname();
     gname();
+    */
 
     printf("\n--- End of the fuzzing test ---\n") ;
 }
