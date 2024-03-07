@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <limits.h>
 
 #define TMAGIC "ustar"
 #define REGTYPE  '0' 
@@ -147,14 +149,14 @@ void gen_tar(struct tar_t* header) {
     }
 
     fwrite(header, sizeof(struct tar_t), 1, fp) ;
-
+/*
     char* content_header = NULL ;
     size_t content_header_size = 0 ;
     if (content_header_size > 0 && fwrite(content_header, content_header_size, 1, fp) != 1) {
         perror("Error writing content");
         fclose(fp);
         //exit(EXIT_FAILURE);
-    }
+    }*/
 
     char end_data[1024];
     memset(end_data, 0, 1024);
@@ -279,7 +281,23 @@ void gid(){
 void size(){
     printf(" Start of Fuzzing on SIZE\n");
 
+    srand(time(NULL)) ;
 
+    //Fuzzing with 10 random size , can be changed
+    for (int i = 0 ; i<10 ; i++) {
+        int random_size = rand() % 512 ; //512 = blocksize
+        create_header(&header);
+        snprintf(header.size,sizeof(header.size), "%o",random_size); //segementation core dumped with strncpy
+        gen_tar(&header);
+        extractor() ;
+    }
+
+    //With negative size
+    //INT_MIN = -2147483648
+    create_header(&header);
+    snprintf(header.size,sizeof(header.size), "%d", INT_MIN); //segementation core dumped with strncpy
+    gen_tar(&header);
+    extractor() ;
 
     printf(" End of Fuzzing on SIZE\n");
 }
@@ -309,8 +327,8 @@ void typeflag(){
 
     printf(" Start of Fuzzing on TYPEFLAG\n");
 
-    // Brute-force every possible value from 0 to 255, possible since typeflag is a single-byte character
-    for (int i = 0; i < 256; i++){
+    // Brute-force every possible value from -1 to 255, negative and all possible positive value
+    for (int i = -1; i < 256; i++){
         create_header(&header);
         header.typeflag = (char) i;
         gen_tar(&header);
@@ -324,7 +342,7 @@ void typeflag(){
 void linkname(){
     printf(" Start of Fuzzing on LINKNAME\n");
 
-
+    fuzzing(header.linkname, sizeof(header.linkname));
 
     printf(" End of Fuzzing on LINKNAME\n");
     
@@ -334,7 +352,7 @@ void linkname(){
 void magic(){
     printf(" Start of Fuzzing on MAGIC\n");
 
-
+    fuzzing(header.magic, sizeof(header.magic));
 
     printf(" End of Fuzzing on MAGIC\n");
     
@@ -344,7 +362,7 @@ void magic(){
 void version(){
     printf(" Start of Fuzzing on VERSION\n");
 
-
+    
 
     printf(" End of Fuzzing on VERSION\n");
     
@@ -354,7 +372,7 @@ void version(){
 void uname(){
     printf(" Start of Fuzzing on UNAME\n");
 
-
+    fuzzing(header.uname, sizeof(header.uname));
 
     printf(" End of Fuzzing on UNAME\n");
     
@@ -364,7 +382,7 @@ void uname(){
 void gname(){
     printf(" Start of Fuzzing on GNAME\n");
 
-
+    fuzzing(header.gname, sizeof(header.gname));
 
     printf(" End of Fuzzing on GNAME\n");
     
@@ -384,15 +402,15 @@ int main(int argc, char* argv[])
     //mode() ;
     uid() ;
     gid() ;
-    //size() ;
+    size() ;
     //mtime();
     //chksum();
     typeflag() ;
-    //linkname();
-    //magic() ;
+    linkname();
+    magic() ;
     //version();
-    //uname();
-    //gname();
+    uname();
+    gname();
     
 
     printf("\n--- End of the fuzzing test ---\n") ;
