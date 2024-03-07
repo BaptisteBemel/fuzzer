@@ -112,25 +112,24 @@ unsigned int calculate_checksum(struct tar_t* entry){
 void create_header(struct tar_t* header) {
     
     char archive_name[100];
-    snprintf(archive_name, sizeof(archive_name), "archive_.tar");
+    snprintf(archive_name, sizeof(archive_name), "archive.tar");
     char linkname[100] = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
     char full_zero[8] = "0000000";
 
     memset(header, 0, sizeof(struct tar_t));
 
     snprintf(header->name, sizeof(header->name), "%s", archive_name);
-    snprintf(header->mode, sizeof(header->mode), "07777"); // all perms (based on constants.h)
+    snprintf(header->mode, sizeof(header->mode), "07777");
     snprintf(header->uid, sizeof(header->uid),"%s", full_zero);
     snprintf(header->gid, sizeof(header->gid),"%s", full_zero);
     snprintf(header->size, sizeof(header->size), "%011o", 0); // size needs to be in octal
-    snprintf(header->mtime, sizeof(header->mtime), "%011lo", time(NULL)); // set modification time to current time in octal format
-    //checksum at the end (need all other fields before calculating the checksum)
+    snprintf(header->mtime, sizeof(header->mtime), "%011lo", time(NULL));
     header->typeflag = REGTYPE;
     snprintf(header->linkname, sizeof(header->linkname), "%s", linkname);
     snprintf(header->magic, sizeof(header->magic), TMAGIC);
     snprintf(header->version, sizeof(header->version) + 1,  TVERSION);
-    snprintf(header->uname, sizeof(header->uname), "Z3US");
-    snprintf(header->gname, sizeof(header->gname), "Z3US");
+    snprintf(header->uname, sizeof(header->uname), "myuser");
+    snprintf(header->gname, sizeof(header->gname), "myuser");
     snprintf(header->devmajor, sizeof(header->devmajor),"%s", full_zero);
     snprintf(header->devminor, sizeof(header->devminor),"%s", full_zero);
 }
@@ -262,7 +261,7 @@ void mode(){
 void uid(){
     printf(" Start of Fuzzing on UID\n");
 
-
+    fuzzing(header.uid, sizeof(header.uid));
 
     printf(" End of Fuzzing on UID\n");
 }
@@ -271,7 +270,7 @@ void uid(){
 void gid(){
     printf(" Start of Fuzzing on GID\n");
 
-
+    fuzzing(header.gid, sizeof(header.gid));
 
     printf(" End of Fuzzing on GID\n");
 }
@@ -382,20 +381,19 @@ int main(int argc, char* argv[])
     printf("--- This is a fuzzing test ---\n") ;
 
     //name() ;
-    /*
-    mode() ;
+    //mode() ;
     uid() ;
     gid() ;
-    size() ;
-    mtime();
-    chksum();
+    //size() ;
+    //mtime();
+    //chksum();
     typeflag() ;
-    linkname();
-    magic() ;
-    version();
-    uname();
-    gname();
-    */
+    //linkname();
+    //magic() ;
+    //version();
+    //uname();
+    //gname();
+    
 
     printf("\n--- End of the fuzzing test ---\n") ;
 }
