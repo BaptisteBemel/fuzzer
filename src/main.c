@@ -330,7 +330,7 @@ void gid(){
 void size(){
     printf(" Start of Fuzzing on SIZE\n");
 
-    fuzzing(header.mtime, sizeof(header.mtime));
+    fuzzing(header.size, sizeof(header.size));
 
     srand(time(NULL)) ;
 
@@ -384,7 +384,7 @@ void mtime(){
 void chksum(){
     printf(" Start of Fuzzing on CHKSUM\n");
 
-    fuzzing(header.mtime, sizeof(header.mtime));
+    fuzzing(header.chksum, sizeof(header.chksum));
 
     printf(" End of Fuzzing on CHKSUM\n");
     
@@ -432,8 +432,17 @@ void version(){
 
     fuzzing(header.version, sizeof(header.version));
 
-    //Rajouter bruteforce car seulement 2bits (en octal) pour ce champ
-
+    //Rajouter bruteforce car seulement 2bits (en octal) pour ce champs
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0 ; j < 10 ; j++) {
+            int version[2] = {i,j} ;
+            create_header(&header);
+            strncpy(header.version,version,sizeof(header.version));
+            gen_tar(&header);
+            extractor() ;
+        }
+    }
+    
     printf(" End of Fuzzing on VERSION\n");
     
 }
