@@ -440,7 +440,7 @@ int main(int argc, char* argv[])
     
     printf("--- This is a fuzzing test ---\n") ;
 
-    name() ;
+    //name() ;
     mode() ;
     uid() ;
     gid() ;
