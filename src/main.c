@@ -3,10 +3,6 @@
 #include <time.h>
 #include <limits.h>
 
-/**
- * Values taken from the Tar Format manual
-*/
-
 #define TMAGIC "ustar"
 #define REGTYPE  '0' 
 #define TVERSION "00"
@@ -129,11 +125,6 @@ unsigned int calculate_checksum(struct tar_t* entry){
     return check;
 }
 
-
-/**
- * Initiate the header to a starting state wich will be the same for almost all the test
- * @param header: The tar header
-*/
 void create_header(struct tar_t* header) {
     
     char archive_name[100];
@@ -160,8 +151,7 @@ void create_header(struct tar_t* header) {
 }
 
 /**
- * Creates a new tar file with the header given as argument
- * @param header: The tar header
+ * Creates a new tar file
  */
 void gen_tar(struct tar_t* header) {
     calculate_checksum(header);
@@ -173,6 +163,14 @@ void gen_tar(struct tar_t* header) {
     }
 
     fwrite(header, sizeof(struct tar_t), 1, fp) ;
+/*
+    char* content_header = NULL ;
+    size_t content_header_size = 0 ;
+    if (content_header_size > 0 && fwrite(content_header, content_header_size, 1, fp) != 1) {
+        perror("Error writing content");
+        fclose(fp);
+        //exit(EXIT_FAILURE);
+    }*/
 
     char end_data[1024];
     memset(end_data, 0, 1024);
@@ -180,7 +178,9 @@ void gen_tar(struct tar_t* header) {
     if (fwrite(end_data, 1024, 1, fp) != 1) {
         perror("Error writing end bytes");
         fclose(fp); 
+        //exit(EXIT_FAILURE);
     }
+
 
     //Close the tar file
     if (fclose(fp) != 0) {
@@ -188,11 +188,33 @@ void gen_tar(struct tar_t* header) {
     }
 }
 
+/**
+Pour le debug 
+ */
+void print_header(struct tar_t* header) {
+    printf("-----Header start-----\n");
+    printf("Name:      %s\n", header->name);
+    printf("Mode:      %s\n", header->mode);
+    printf("UID:       %s\n", header->uid);
+    printf("GID:       %s\n", header->gid);
+    printf("Size:      %s\n", header->size);
+    printf("Mtime:     %s\n", header->mtime);
+    printf("Chksum:    %s\n", header->chksum);
+    printf("Typeflag:  %c\n", header->typeflag);
+    printf("Linkname:  %s\n", header->linkname);
+    printf("Magic:     %s\n", header->magic);
+    printf("Version:   %s\n", header->version);
+    printf("Uname:     %s\n", header->uname);
+    printf("Gname:     %s\n", header->gname);
+    printf("Devmajor:  %s\n", header->devmajor);
+    printf("Devminor:  %s\n", header->devminor);
+    printf("Prefix:    %s\n", header->prefix);
+    printf("Padding:   %s\n", header->padding);
+    printf("-----Header end-----\n");
+}
 
 /**
- * Perform different tests on a specific field of the header
- * @param field_to_fuze: The field from the header wich will be changes when performing the tests
- * @param size_field_to_fuze: The size of the specific field
+ * Perform fuzzing on various field
  */
 void fuzzing(char* field_to_fuze, size_t size_field_to_fuze) {
 
@@ -238,21 +260,18 @@ void fuzzing(char* field_to_fuze, size_t size_field_to_fuze) {
     gen_tar(&header);
     extractor();
 
-    //Test 6
     //Test with special characters
     create_header(&header);
     strncpy(field_to_fuze, "!@#$%^&*()_+-=[]{};':,.<>?/\\|~`", size_field_to_fuze);
     gen_tar(&header);
     extractor();
 
-    //Test 7
     //Only integer
     create_header(&header);
     memset(field_to_fuze,5,size_field_to_fuze);
     gen_tar(&header);
     extractor();
 
-    //Test 8
     //Negative number
     create_header(&header);
     memset(field_to_fuze,-5,size_field_to_fuze);
@@ -260,9 +279,7 @@ void fuzzing(char* field_to_fuze, size_t size_field_to_fuze) {
     extractor();
 }
 
-/**
- * Fuzzing on the field name
-*/
+//Fuzzing on the field name
 void name(){
     printf(" Start of Fuzzing on NAME\n");
 
@@ -271,9 +288,7 @@ void name(){
     printf(" End of Fuzzing on MODE\n");
 }
 
-/**
- * Fuzzing on the field mode
-*/
+//Fuzzing on the field mode
 void mode(){
     printf(" Start of Fuzzing on MODE\n");
 
@@ -338,11 +353,6 @@ void size(){
     printf(" End of Fuzzing on SIZE\n");
 }
 
-
-/**
- * Fuzz on the field mtime with the time given as paramater
- * @param time: var to put in mtime field from the header 
-*/
 void mtime_fuzz(time_t time){
     char time_string[sizeof(header.mtime)] ;
     create_header(&header);
@@ -358,7 +368,7 @@ void mtime(){
 
     fuzzing(header.mtime, sizeof(header.mtime));
 
-    //Various test on mtime
+    //Various test on the time
     mtime_fuzz(INT_MIN) ;
     mtime_fuzz(-10) ;
     mtime_fuzz(10) ;
@@ -422,10 +432,21 @@ void version(){
 
     fuzzing(header.version, sizeof(header.version));
 
-    //Rajouter bruteforce car seulement 2bits (en octal) pour ce champs
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0 ; j < 10 ; j++) {
-            int version[2] = {i,j} ;
+    //Bruteforce on all possibilities
+    //All positive possibilities
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0 ; j < 9 ; j++) {
+            char version[] = {i + '0',j + '0'} ;
+            create_header(&header);
+            strncpy(header.version,version,sizeof(header.version));
+            gen_tar(&header);
+            extractor() ;
+        }
+    }
+    //All negatives possibilities
+    for (int i = -1; i > -9; i--) {
+        for (int j = -1 ; j > -9 ; j--) {
+            char version[] = {i + '0',j + '0'} ;
             create_header(&header);
             strncpy(header.version,version,sizeof(header.version));
             gen_tar(&header);
@@ -458,37 +479,28 @@ void gname(){
 }
 
 
-/**
- * Main Function
- * Calls the different functions to perform the fuzzing on the header
- * @param argv[1]: contains the path to the extractor
+/*
+Main Function
 */
 int main(int argc, char* argv[])
 {
-
-    if (argc != 2) {
-        printf("Invalid number of arguments.\n");
-        printf("Usage : ./fuzzer <path to extractor>");
-        return -1;
-    }
-
     path = argv[1] ;
     
     printf("--- This is a fuzzing test ---\n") ;
 
     //name() ;
-    mode() ;
-    uid() ;
-    gid() ;
-    size() ;
-    mtime();
-    chksum();
-    typeflag() ;
-    linkname();
-    magic() ;
+    //mode() ;
+    //uid() ;
+    //gid() ;
+    //size() ;
+    //mtime();
+    //chksum();
+    //typeflag() ;
+    //linkname();
+    //magic() ;
     version();
-    uname();
-    gname();
+    //uname();
+    //gname();
     
 
     printf("\n--- End of the fuzzing test ---\n") ;
