@@ -260,6 +260,12 @@ void fuzzing(char* field_to_fuze, size_t size_field_to_fuze) {
     gen_tar(&header);
     extractor();
 
+    //Test with special characters
+    create_header(&header);
+    strncpy(field_to_fuze, "!@#$%^&*()_+-=[]{};':,.<>?/\\|~`", size_field_to_fuze);
+    gen_tar(&header);
+    extractor();
+
     //Only integer
     create_header(&header);
     memset(field_to_fuze,5,size_field_to_fuze);
@@ -302,7 +308,7 @@ void mode(){
     printf(" End of Fuzzing on MODE\n");
 }
 
-//Fuzzing on the field uid
+//Fuzzing on the field uid - c'est tout
 void uid(){
     printf(" Start of Fuzzing on UID\n");
 
@@ -311,7 +317,7 @@ void uid(){
     printf(" End of Fuzzing on UID\n");
 }
 
-//Fuzzing on the field gid
+//Fuzzing on the field gid - c'est tout
 void gid(){
     printf(" Start of Fuzzing on GID\n");
 
@@ -400,7 +406,7 @@ void typeflag(){
     printf(" End of Fuzzing on TYPEFLAG\n");
 }
 
-//Fuzzing on the field linkname
+//Fuzzing on the field linkname - c'est tout
 void linkname(){
     printf(" Start of Fuzzing on LINKNAME\n");
 
@@ -410,7 +416,7 @@ void linkname(){
     
 }
 
-//Fuzzing on the field magic
+//Fuzzing on the field magic - c'est tout
 void magic(){
     printf(" Start of Fuzzing on MAGIC\n");
 
@@ -426,11 +432,13 @@ void version(){
 
     fuzzing(header.version, sizeof(header.version));
 
+    //Rajouter bruteforce car seulement 2bits (en octal) pour ce champ
+
     printf(" End of Fuzzing on VERSION\n");
     
 }
 
-//Fuzzing on the field uname
+//Fuzzing on the field uname - c'est tout
 void uname(){
     printf(" Start of Fuzzing on UNAME\n");
 
@@ -440,7 +448,7 @@ void uname(){
     
 }
 
-//Fuzzing on the field gname
+//Fuzzing on the field gname - c'est tout
 void gname(){
     printf(" Start of Fuzzing on GNAME\n");
 
