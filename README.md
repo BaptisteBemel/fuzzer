@@ -1,6 +1,6 @@
 # fuzzer
-to do:
-- gen_tar()
-- test() with gen all tests
-- crack function for each tar field
+## Left to do :
+- Add more test in the global fuzzing function
+- Fuzing on chksum
+- Fuzzing on version
 - ...

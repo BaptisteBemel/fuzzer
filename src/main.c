@@ -327,10 +327,27 @@ void size(){
     printf(" End of Fuzzing on SIZE\n");
 }
 
+void mtime_fuzz(time_t time){
+    char time_string[sizeof(header.mtime)] ;
+    create_header(&header);
+    snprintf(time_string, sizeof(header.mtime), "%lo", INT_MIN);
+    strncpy(header.mtime,time_string,sizeof(header.mtime));
+    gen_tar(&header);
+    extractor() ;
+}
+
 //Fuzzing on the field mtime
 void mtime(){
     printf(" Start of Fuzzing on MTIME\n");
 
+    fuzzing(header.mtime, sizeof(header.mtime));
+
+    //Various test on the time
+    mtime_fuzz(INT_MIN) ;
+    mtime_fuzz(-10) ;
+    mtime_fuzz(10) ;
+    mtime_fuzz(time(NULL)) ;
+    mtime_fuzz(time(NULL)+INT_MAX) ;
 
 
     printf(" End of Fuzzing on MTIME\n");
@@ -387,7 +404,7 @@ void magic(){
 void version(){
     printf(" Start of Fuzzing on VERSION\n");
 
-    
+    fuzzing(header.version, sizeof(header.version));
 
     printf(" End of Fuzzing on VERSION\n");
     
@@ -423,17 +440,17 @@ int main(int argc, char* argv[])
     
     printf("--- This is a fuzzing test ---\n") ;
 
-    //name() ;
-    //mode() ;
+    name() ;
+    mode() ;
     uid() ;
     gid() ;
     size() ;
-    //mtime();
-    //chksum();
+    mtime();
+    chksum();
     typeflag() ;
     linkname();
     magic() ;
-    //version();
+    version();
     uname();
     gname();
     
