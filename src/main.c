@@ -244,15 +244,33 @@ void fuzzing(char* field_to_fuze, size_t size_field_to_fuze) {
     create_header(&header);
     strncpy(field_to_fuze,"ThisIsAFieldIHopeIsReallyLongAndTooLongForTheExtractorToWorkCorrectly",size_field_to_fuze);
     gen_tar(&header);
-    extractor() ;
+    extractor();
 
     //Test 5
     //Non ascii char
+    create_header(&header);
+    strncpy(field_to_fuze,"é",size_field_to_fuze);
+    gen_tar(&header);
+    extractor();
 
     //Test 5
-    //???
+    //Control char
+    create_header(&header);
+    strncpy(field_to_fuze,"\n",size_field_to_fuze);
+    gen_tar(&header);
+    extractor();
 
+    //Only integer
+    create_header(&header);
+    memset(field_to_fuze,5,size_field_to_fuze);
+    gen_tar(&header);
+    extractor();
 
+    //Negative number
+    create_header(&header);
+    memset(field_to_fuze,-5,size_field_to_fuze);
+    gen_tar(&header);
+    extractor();
 }
 
 //Fuzzing on the field name
@@ -306,6 +324,8 @@ void gid(){
 void size(){
     printf(" Start of Fuzzing on SIZE\n");
 
+    fuzzing(header.mtime, sizeof(header.mtime));
+
     srand(time(NULL)) ;
 
     //Fuzzing with 10 random size , can be changed
@@ -358,7 +378,7 @@ void mtime(){
 void chksum(){
     printf(" Start of Fuzzing on CHKSUM\n");
 
-
+    fuzzing(header.mtime, sizeof(header.mtime));
 
     printf(" End of Fuzzing on CHKSUM\n");
     
