@@ -7,6 +7,20 @@
 #define REGTYPE  '0' 
 #define TVERSION "00"
 
+#define TSUID    04000          /* set UID on execution */
+#define TSGID    02000          /* set GID on execution */
+#define TSVTX    01000          /* reserved */
+                                /* file permissions */
+#define TUREAD   00400          /* read by owner */
+#define TUWRITE  00200          /* write by owner */
+#define TUEXEC   00100          /* execute/search by owner */
+#define TGREAD   00040          /* read by group */
+#define TGWRITE  00020          /* write by group */
+#define TGEXEC   00010          /* execute/search by group */
+#define TOREAD   00004          /* read by other */
+#define TOWRITE  00002          /* write by other */
+#define TOEXEC   00001          /* execute/search by other */
+
 char* path ;
 int number_of_success = 1 ;
 
@@ -254,7 +268,18 @@ void name(){
 void mode(){
     printf(" Start of Fuzzing on MODE\n");
 
+    fuzzing(header.mode, sizeof(header.mode));
 
+    int modes[] = {TSUID, TSGID, TSVTX, TUREAD, TUWRITE, TUEXEC, TGREAD, TGWRITE, TGEXEC, TOREAD, TOWRITE, TOEXEC};
+
+    for(int ii=0; ii < sizeof(modes); ii++){
+        char mode[sizeof(header.mode)];
+        create_header(&header);
+        snprintf(mode, sizeof(header.mode), "%o", modes[ii]);
+        strncpy(header.mode, mode, sizeof(header.mode));
+        gen_tar(&header);
+        extractor();
+    }
 
     printf(" End of Fuzzing on MODE\n");
 }
