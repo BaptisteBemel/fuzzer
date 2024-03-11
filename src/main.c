@@ -379,6 +379,7 @@ void chksum(){
 void typeflag(){
 
     printf(" Start of Fuzzing on TYPEFLAG\n");
+    
 
     // Brute-force every possible value from -1 to 255, negative and all possible positive value
     for (int i = -1; i < 256; i++){
@@ -387,6 +388,12 @@ void typeflag(){
         gen_tar(&header);
         extractor() ;
     }
+
+    //Non ascii char
+    create_header(&header);
+    header.typeflag =  'é' ;
+    gen_tar(&header);
+    extractor();
 
     printf(" End of Fuzzing on TYPEFLAG\n");
 }
