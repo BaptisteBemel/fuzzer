@@ -2,6 +2,7 @@
 #include <string.h>
 #include <time.h>
 #include <limits.h>
+#include <stdlib.h>
 
 
 /**
@@ -341,7 +342,7 @@ void size(){
 void mtime_fuzz(time_t time){
     char time_string[sizeof(header.mtime)] ;
     create_header(&header);
-    snprintf(time_string, sizeof(header.mtime), "%lo", INT_MIN);
+    snprintf(time_string, sizeof(header.mtime), "%d", INT_MIN);
     strncpy(header.mtime,time_string,sizeof(header.mtime));
     gen_tar(&header);
     extractor() ;
@@ -391,7 +392,7 @@ void typeflag(){
 
     //Non ascii char
     create_header(&header);
-    header.typeflag =  'é' ;
+    header.typeflag =  (char) 'é' ;
     gen_tar(&header);
     extractor();
 
